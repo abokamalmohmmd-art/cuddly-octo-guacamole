@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudySync - منظم المذاكرة</title>
+    
+    <!-- الأنماط والتصميم (CSS) -->
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #f0f2f5;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 { color: #4a90e2; margin-bottom: 5px; }
+        .subtitle { color: #666; margin-bottom: 20px; }
+
+        .stats-card, .timer-card, .city-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+
+        .stats-card {
+            display: flex;
+            justify-content: space-around;
+            font-size: 1.1rem;
+        }
+
+        #timer {
+            font-size: 4rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 15px 0;
+        }
+
+        .controls button {
+            padding: 10px 20px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 5px;
+            background-color: #2ecc71;
+            color: white;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .controls button.secondary { background-color: #f39c12; }
+        .controls button.danger { background-color: #e74c3c; }
+        .controls button:hover { opacity: 0.9; }
+
+        .city-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 15px;
+            min-height: 60px;
+        }
+
+        .building-unit {
+            font-size: 2rem;
+            padding: 10px;
+            background: #eef9f2;
+            border-radius: 8px;
+            animation: popIn 0.3s ease;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- الهيكل والتنظيم (HTML) -->
+    <div class="container">
+        <h1>StudySync 🎯</h1>
+        <p class="subtitle">ركز في مذاكرتك وابنِ مدينتك!</p>
+
+        <!-- لوحة النقاط والمدينة -->
+        <div class="stats-card">
+            <div class="stat">
+                <span>النقاط:</span>
+                <strong id="points">0</strong> 🪙
+            </div>
+            <div class="stat">
+                <span>المباني المكتملة:</span>
+                <strong id="buildings">0</strong> 🏗️
+            </div>
+        </div>
+
+        <!-- مؤقت البومودورو -->
+        <div class="timer-card">
+            <div id="timer">25:00</div>
+            <div class="controls">
+                <button id="start-btn" onclick="startTimer()">ابدأ التركيز</button>
+                <button id="pause-btn" onclick="pauseTimer()" class="secondary">إيقاف مؤقت</button>
+                <button id="reset-btn" onclick="resetTimer()" class="danger">إعادة ضبط</button>
+            </div>
+        </div>
+
+        <!-- معرض المدينة الافتراضية -->
+        <div class="city-card">
+            <h3>مدينتك الافتراضية</h3>
+            <div id="city-grid" class="city-grid">
+                <!-- ستظهر المباني هنا عند كسب النقاط -->
+            </div>
+        </div>
+    </div>
+
+    <!-- البرمجة والتفاعل (JavaScript) -->
+    <script>
+        let timerInterval;
+        let timeLeft = 25 * 60; // 25 دقيقة بالثواني
+        let isRunning = false;
+
+        let points = 0;
+        let buildings = 0;
+
+        const timerDisplay = document.getElementById('timer');
+        const pointsDisplay = document.getElementById('points');
+        const buildingsDisplay = document.getElementById('buildings');
+        const cityGrid = document.getElementById('city-grid');
+
+        const buildingIcons = ['🏠', '🏡', '🏢', '🏣', '🏰', '🏬', '🏫'];
+
+        function updateDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function startTimer() {
+            if (isRunning) return;
+            isRunning = true;
+            
+            timerInterval = setInterval(() => {
+                if (timeLeft > 0) {
+                    timeLeft--;
+                    updateDisplay();
+                } else {
+                    clearInterval(timerInterval);
+                    isRunning = false;
+                    completeSession();
+                }
+            }, 1000);
+        }
+
+        function pauseTimer() {
+            clearInterval(timerInterval);
+            isRunning = false;
+        }
+
+        function resetTimer() {
+            pauseTimer();
+            timeLeft = 25 * 60;
+            updateDisplay();
+        }
+
+        function completeSession() {
+            alert("أحسنت! أكملت جلسة التركيز بنجاح وحصلت على 50 نقطة ومبنى جديد! 🎉");
+            
+            points += 50;
+            buildings += 1;
+            
+            pointsDisplay.textContent = points;
+            buildingsDisplay.textContent = buildings;
+            
+            const randomBuilding = buildingIcons[Math.floor(Math.random() * buildingIcons.length)];
+            const buildingSpan = document.createElement('span');
+            buildingSpan.className = 'building-unit';
+            buildingSpan.textContent = randomBuilding;
+            cityGrid.appendChild(buildingSpan);
+            
+            resetTimer();
+        }
+
+        // تهيئة المؤقت عند التحميل
+        updateDisplay();
+    </script>
+</body>
+</html>
